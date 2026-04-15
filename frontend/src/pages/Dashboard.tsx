@@ -9,14 +9,14 @@ function StatCard({ title, value, subtitle, color, icon }: {
   icon: React.ReactNode;
 }) {
   return (
-    <div className="card flex items-center gap-4">
-      <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+    <div className="card flex items-center gap-3 sm:gap-4 p-4 sm:p-6">
+      <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
         {icon}
       </div>
-      <div>
-        <p className="text-sm text-gray-500 font-medium">{title}</p>
-        <p className="text-3xl font-bold text-gray-900">{value}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
+      <div className="min-w-0">
+        <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">{title}</p>
+        <p className="text-2xl sm:text-3xl font-bold text-gray-900">{value}</p>
+        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{subtitle}</p>
       </div>
     </div>
   );
@@ -49,7 +49,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
@@ -62,7 +62,7 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
           <p className="text-red-700 font-medium">Erro ao carregar dados</p>
           <p className="text-red-500 text-sm mt-1">{error}</p>
@@ -73,15 +73,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1 capitalize">{todayStr}</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-500 mt-1 capitalize text-sm sm:text-base">{todayStr}</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <StatCard
           title="Total de Pacientes"
           value={data?.totalPatients ?? 0}
@@ -141,6 +141,7 @@ export default function Dashboard() {
           </span>
         </div>
 
+        {/* Today's list */}
         {!data?.todayAppointmentsList.length ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -159,8 +160,8 @@ export default function Dashboard() {
                 <tr className="text-left border-b border-gray-200">
                   <th className="pb-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Hora</th>
                   <th className="pb-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Paciente</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Duração</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Notas</th>
+                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Duração</th>
+                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Notas</th>
                   <th className="pb-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
                 </tr>
               </thead>
@@ -169,18 +170,18 @@ export default function Dashboard() {
                   <tr key={appt.id} className="hover:bg-gray-50">
                     <td className="py-3">
                       <div className="flex items-center gap-2">
-                        <div className={`w-2.5 h-2.5 rounded-full ${
+                        <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                           appt.status === 'scheduled' ? 'bg-blue-500' :
                           appt.status === 'completed' ? 'bg-green-500' : 'bg-gray-400'
                         }`}></div>
-                        <span className="font-semibold text-gray-900">{appt.time}</span>
+                        <span className="font-semibold text-gray-900 text-sm sm:text-base">{appt.time}</span>
                       </div>
                     </td>
                     <td className="py-3">
-                      <div className="font-medium text-gray-900">{appt.patient_name}</div>
+                      <div className="font-medium text-gray-900 text-sm sm:text-base">{appt.patient_name}</div>
                     </td>
-                    <td className="py-3 text-gray-600 text-sm">{appt.duration} min</td>
-                    <td className="py-3 text-gray-500 text-sm max-w-xs truncate">
+                    <td className="py-3 text-gray-600 text-sm hidden sm:table-cell">{appt.duration} min</td>
+                    <td className="py-3 text-gray-500 text-sm max-w-xs truncate hidden md:table-cell">
                       {appt.notes || '—'}
                     </td>
                     <td className="py-3">

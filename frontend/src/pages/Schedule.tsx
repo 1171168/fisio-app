@@ -279,16 +279,16 @@ export default function Schedule() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5 sm:mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-gray-500 mt-1">{appointments.length} consulta(s) esta semana</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Agenda</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">{appointments.length} consulta(s) esta semana</p>
         </div>
         <button
           onClick={() => { setEditAppt(null); setDefaultDate(undefined); setShowModal(true); }}
-          className="btn-primary"
+          className="btn-primary text-sm sm:text-base"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -298,7 +298,7 @@ export default function Schedule() {
       </div>
 
       {/* Week Navigation */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-2 sm:gap-4 mb-5 sm:mb-6 flex-wrap">
         <div className="flex items-center gap-1">
           <button onClick={goPrevWeek} className="p-2 rounded-lg hover:bg-gray-200 transition-colors text-gray-600">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,7 +311,7 @@ export default function Schedule() {
             </svg>
           </button>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900">{weekLabel()}</h2>
+        <h2 className="text-sm sm:text-lg font-semibold text-gray-900">{weekLabel()}</h2>
         {!isCurrentWeek && (
           <button onClick={goTodayWeek} className="btn-secondary text-sm px-3 py-1.5">
             Hoje
@@ -329,8 +329,8 @@ export default function Schedule() {
         </div>
       ) : (
         <>
-          {/* Weekly Calendar Grid */}
-          <div className="card p-0 overflow-hidden mb-8">
+          {/* Weekly Calendar Grid — desktop only (lg+) */}
+          <div className="hidden lg:block card p-0 overflow-hidden mb-8">
             <div className="grid grid-cols-7 border-b border-gray-200">
               {weekDates.map((date, i) => {
                 const dateStr = toDateStr(date);
@@ -402,9 +402,47 @@ export default function Schedule() {
             </div>
           </div>
 
+          {/* Mobile/tablet day strips — visible below lg */}
+          <div className="lg:hidden mb-6">
+            <div className="grid grid-cols-7 gap-1 mb-4">
+              {weekDates.map((date, i) => {
+                const dateStr = toDateStr(date);
+                const isToday = dateStr === today;
+                const count = getApptsByDate(dateStr).length;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setEditAppt(null);
+                      setDefaultDate(dateStr);
+                      setShowModal(true);
+                    }}
+                    className={`flex flex-col items-center py-2 rounded-xl transition-colors ${
+                      isToday ? 'bg-teal-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className={`text-xs font-semibold uppercase ${isToday ? 'text-teal-200' : 'text-gray-400'}`}>
+                      {DAYS_PT[date.getDay()]}
+                    </span>
+                    <span className={`text-sm font-bold mt-0.5 ${isToday ? 'text-white' : 'text-gray-900'}`}>
+                      {date.getDate()}
+                    </span>
+                    {count > 0 && (
+                      <span className={`mt-1 w-4 h-4 rounded-full text-xs flex items-center justify-center font-bold ${
+                        isToday ? 'bg-teal-400 text-white' : 'bg-teal-100 text-teal-700'
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* List View */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Lista desta Semana</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Lista desta Semana</h2>
             {appointments.length === 0 ? (
               <div className="card text-center py-10 text-gray-500">
                 Nenhuma consulta agendada para esta semana.
@@ -447,8 +485,8 @@ export default function Schedule() {
                                     <span className="font-medium text-gray-900">{appt.patient_name}</span>
                                   </div>
                                 </td>
-                                <td className="px-4 py-3 text-sm text-gray-500">{appt.duration} min</td>
-                                <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px] truncate">{appt.notes || '—'}</td>
+                                <td className="px-4 py-3 text-sm text-gray-500 hidden sm:table-cell">{appt.duration} min</td>
+                                <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px] truncate hidden md:table-cell">{appt.notes || '—'}</td>
                                 <td className="px-4 py-3">
                                   <StatusBadge status={appt.status} />
                                 </td>

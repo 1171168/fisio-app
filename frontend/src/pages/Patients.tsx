@@ -103,7 +103,7 @@ function PatientModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Email</label>
               <input
@@ -253,7 +253,7 @@ function PatientDetail({
             </div>
           ) : tab === 'info' ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Email</p>
                   <p className="text-gray-900">{patient.email || '—'}</p>
@@ -387,16 +387,16 @@ export default function Patients() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pacientes</h1>
-          <p className="text-gray-500 mt-1">{patients.length} paciente(s) registado(s)</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Pacientes</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">{patients.length} paciente(s) registado(s)</p>
         </div>
         <button
           onClick={() => { setEditPatient(null); setShowModal(true); }}
-          className="btn-primary"
+          className="btn-primary text-sm sm:text-base"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -412,7 +412,7 @@ export default function Patients() {
         </svg>
         <input
           type="text"
-          className="input-field pl-10 max-w-md"
+          className="input-field pl-10 w-full sm:max-w-md"
           placeholder="Pesquisar por nome, email ou telefone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -445,74 +445,124 @@ export default function Patients() {
               {search && <p className="text-gray-400 text-sm mt-1">Tente uma pesquisa diferente.</p>}
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Paciente</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Contacto</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Idade</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Morada</th>
-                  <th className="px-6 py-3"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
+            <>
+              {/* Mobile card list — visible below md */}
+              <div className="md:hidden divide-y divide-gray-100">
                 {filtered.map((p) => (
-                  <tr
+                  <div
                     key={p.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer"
                     onClick={() => setViewPatient(p)}
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-teal-700 font-semibold text-sm">
-                            {p.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{p.name}</p>
-                          {p.medical_notes && (
-                            <p className="text-xs text-gray-400 truncate max-w-[200px]">{p.medical_notes}</p>
-                          )}
-                        </div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-teal-700 font-semibold text-sm">
+                          {p.name.charAt(0).toUpperCase()}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-sm text-gray-700">{p.email || '—'}</p>
-                        <p className="text-sm text-gray-500">{p.phone || '—'}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{p.name}</p>
+                        <p className="text-xs text-gray-500">{p.phone || p.email || '—'}</p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{calcAge(p.date_of_birth)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-[180px] truncate">{p.address || '—'}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => { setEditPatient(p); setShowModal(true); }}
-                          className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                          title="Editar"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm(p)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Eliminar"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    </div>
+                    <div className="flex items-center gap-1 ml-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => { setEditPatient(p); setShowModal(true); }}
+                        className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                        title="Editar"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(p)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Desktop/tablet table — visible from md up */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Paciente</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Contacto</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Idade</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Morada</th>
+                      <th className="px-6 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filtered.map((p) => (
+                      <tr
+                        key={p.id}
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => setViewPatient(p)}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-teal-700 font-semibold text-sm">
+                                {p.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{p.name}</p>
+                              {p.medical_notes && (
+                                <p className="text-xs text-gray-400 truncate max-w-[200px]">{p.medical_notes}</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div>
+                            <p className="text-sm text-gray-700">{p.email || '—'}</p>
+                            <p className="text-sm text-gray-500">{p.phone || '—'}</p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{calcAge(p.date_of_birth)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500 max-w-[180px] truncate hidden lg:table-cell">{p.address || '—'}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => { setEditPatient(p); setShowModal(true); }}
+                              className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                              title="Editar"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirm(p)}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Eliminar"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}

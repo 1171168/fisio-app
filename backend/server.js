@@ -14,6 +14,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'fisio2024';
 app.use(cors());
 app.use(express.json());
 
+// Public health check (used by Railway)
+app.get('/health', (_req, res) => res.json({ ok: true }));
+
 // Auth: login (public)
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body || {};
