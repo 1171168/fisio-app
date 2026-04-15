@@ -687,7 +687,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Servidor Fisioterapia rodando em http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor Fisioterapia rodando em http://0.0.0.0:${PORT}`);
   console.log(`Base de dados em: ${dbPath}`);
 });
