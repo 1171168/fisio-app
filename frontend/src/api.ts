@@ -65,17 +65,42 @@ export interface DashboardData {
 
 // ==================== HELPER ====================
 
+export const getToken = () => localStorage.getItem('fisio_token');
+export const setToken = (t: string) => localStorage.setItem('fisio_token', t);
+export const clearToken = () => localStorage.removeItem('fisio_token');
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = getToken();
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options?.headers || {}),
+    },
   });
+  if (res.status === 401) {
+    clearToken();
+    window.location.href = '/login';
+    throw new Error('Sessão expirada');
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Erro desconhecido' }));
     throw new Error(err.error || `Erro ${res.status}`);
   }
   return res.json();
 }
+
+export const login = (username: string, password: string) =>
+  fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  }).then(async res => {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro no login');
+    return data as { token: string };
+  });
 
 // ==================== DASHBOARD ====================
 

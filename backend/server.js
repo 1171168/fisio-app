@@ -2,13 +2,42 @@ const express = require('express');
 const cors = require('cors');
 const Database = require('better-sqlite3');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const JWT_SECRET = process.env.JWT_SECRET || 'fisio-dev-secret';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'fisio2024';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Auth: login (public)
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body || {};
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '30d' });
+    return res.json({ token });
+  }
+  res.status(401).json({ error: 'Credenciais inválidas' });
+});
+
+// Auth middleware — protects all /api routes except /api/auth/login
+app.use('/api', (req, res, next) => {
+  if (req.method === 'POST' && req.path === '/auth/login') return next();
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Não autorizado' });
+  }
+  try {
+    jwt.verify(auth.slice(7), JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Sessão expirada, faça login novamente' });
+  }
+});
 
 // Database setup
 const dbPath = path.join(__dirname, 'fisio.db');

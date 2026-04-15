@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import Schedule from './pages/Schedule';
 import Exams from './pages/Exams';
 import Library from './pages/Library';
+import Login from './pages/Login';
+import { getToken, clearToken } from './api';
 
-function Sidebar() {
+function Sidebar({ onLogout }: { onLogout: () => void }) {
   const location = useLocation();
 
   const navItems = [
@@ -102,18 +105,28 @@ function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-teal-800">
-        <p className="text-teal-500 text-xs text-center">v1.0.0 &copy; 2024</p>
+      {/* Footer with logout */}
+      <div className="px-3 py-4 border-t border-teal-800 space-y-2">
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-teal-200 hover:bg-teal-800 hover:text-white transition-colors duration-150"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Terminar sessão
+        </button>
+        <p className="text-teal-600 text-xs text-center">v1.0.0 &copy; 2024</p>
       </div>
     </aside>
   );
 }
 
-function Layout({ children }: { children: React.ReactNode }) {
+function Layout({ onLogout, children }: { onLogout: () => void; children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar onLogout={onLogout} />
       <main className="flex-1 ml-64 min-h-screen bg-gray-50">
         {children}
       </main>
@@ -122,9 +135,20 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => !!getToken());
+
+  function handleLogout() {
+    clearToken();
+    setAuthed(false);
+  }
+
+  if (!authed) {
+    return <Login onLogin={() => setAuthed(true)} />;
+  }
+
   return (
     <BrowserRouter>
-      <Layout>
+      <Layout onLogout={handleLogout}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/patients" element={<Patients />} />
