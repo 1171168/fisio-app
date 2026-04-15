@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "NODE_ENV=production node backend/server.js",
+    "healthcheckPath": "/api/patients",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
