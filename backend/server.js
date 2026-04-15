@@ -3,12 +3,25 @@ const cors = require('cors');
 const Database = require('better-sqlite3');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'fisio-dev-secret';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'fisio2024';
+
+// Password hashing (Node built-in crypto — no extra deps)
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+function verifyPassword(password, stored) {
+  const [salt, hash] = stored.split(':');
+  const attempt = crypto.scryptSync(password, salt, 64).toString('hex');
+  return attempt === hash;
+}
 
 // Middleware
 app.use(cors());
@@ -20,11 +33,13 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 // Auth: login (public)
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body || {};
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '30d' });
-    return res.json({ token });
+  if (!username || !password) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  if (!user || !verifyPassword(password, user.password_hash)) {
+    return res.status(401).json({ error: 'Credenciais inválidas' });
   }
-  res.status(401).json({ error: 'Credenciais inválidas' });
+  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '30d' });
+  res.json({ token });
 });
 
 // Auth middleware — protects all /api routes except /api/auth/login
@@ -42,6 +57,16 @@ app.use('/api', (req, res, next) => {
   }
 });
 
+// Admin: create user (requires auth)
+app.post('/api/admin/users', (req, res) => {
+  const { username, password } = req.body || {};
+  if (!username || !password) return res.status(400).json({ error: 'Username e password são obrigatórios' });
+  const existing = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
+  if (existing) return res.status(409).json({ error: 'Utilizador já existe' });
+  db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hashPassword(password));
+  res.json({ success: true, username });
+});
+
 // Database setup
 const dbPath = path.join(__dirname, 'fisio.db');
 const db = new Database(dbPath);
@@ -51,6 +76,13 @@ db.pragma('foreign_keys = ON');
 
 // Create tables
 db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE TABLE IF NOT EXISTS patients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -106,6 +138,14 @@ db.exec(`
 // INSERT INTO patients (name, email, phone, date_of_birth) VALUES ('Maria Silva', 'maria@email.com', '912345678', '1985-03-15');
 // INSERT INTO tests_library (name, description, category) VALUES ('Teste de Lasègue', 'Avalia compressão radicular lombar', 'Ortopédico');
 // INSERT INTO appointments (patient_id, date, time, duration, status) VALUES (1, '2024-02-15', '09:00', 60, 'scheduled');
+
+// Seed admin user from env vars if no users exist yet
+if (db.prepare('SELECT COUNT(*) as c FROM users').get().c === 0) {
+  db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(
+    ADMIN_USERNAME, hashPassword(ADMIN_PASSWORD)
+  );
+  console.log(`Utilizador admin criado: ${ADMIN_USERNAME}`);
+}
 
 // Check if we need seed data
 const patientCount = db.prepare('SELECT COUNT(*) as count FROM patients').get();
